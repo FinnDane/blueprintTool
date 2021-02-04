@@ -3,12 +3,19 @@ import json
 import re
 import argparse
 
+from colors import colorLookup
+
 #Arguments
 argParser = argparse.ArgumentParser()
 
 argParser.add_argument("blueprint", help = "the name of the blueprint you are trying to edit")
-argParser.add_argument("-c", "--connect", nargs = 2, metavar = ("SRC", "DST"), help = "connect logic gates of color SRC to logic gates of color DST (use hex for color)")
+argParser.add_argument("-c", "--connect", nargs = 2, metavar = ("SRC", "DST"), help = "connect logic gates of color SRC to logic gates of color DST (use this format: <baseColor>-<1-4> or hex directly for color)")
 args = argParser.parse_args()
+
+def parseColor(input):
+	if(input in colorLookup):
+		return colorLookup[input]
+	return input
 
 #Simple helper class to store paths
 class paths:
@@ -43,13 +50,13 @@ if(found):
 					#loop over all parts to detect if they are a destination
 					for body in blueprintJson["bodies"]:
 						for child in body["childs"]:
-							if(child["color"] == args.connect[1].lower()):	#if current part is destination color
+							if(child["color"] == parseColor(args.connect[1]).lower()):	#if current part is destination color
 								destinations.append({"id": child["controller"]["id"]})
 
 					#loop over all parts again to write the destinations to the sources
 					for body in blueprintJson["bodies"]:
 						for child in body["childs"]:
-							if(child["color"] == args.connect[0].lower()):	#if current part is source color
+							if(child["color"] == parseColor(args.connect[0]).lower()):	#if current part is source color
 								for destination in destinations:
 									if child["controller"]["controllers"] == None:	#check if the part already has connections and if not just write the whole array directly 
 										child["controller"]["controllers"] = destinations
