@@ -22,16 +22,16 @@ class paths:
 found = False
 multipleFound = False
 for BpDirItterator in os.listdir(paths.blueprints):
-			try:
-				with open("%s\\%s\\description.json" %(paths.blueprints, BpDirItterator), "r") as descriptionFile:
-					name = json.load(descriptionFile)["name"]
-					if(name == args.blueprint):
-						print(BpDirItterator)
-						multipleFound = found
-						found = True
-						bpDir = BpDirItterator
-			except:
-				pass
+	try:
+		with open("%s\\%s\\description.json" %(paths.blueprints, BpDirItterator), "r") as descriptionFile:
+			name = json.load(descriptionFile)["name"]
+			if(name == args.blueprint):
+				print(BpDirItterator)
+				multipleFound = found
+				found = True
+				bpDir = BpDirItterator
+	except:
+		pass
 
 if(found):
 	if(multipleFound):
