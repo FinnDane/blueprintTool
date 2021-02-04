@@ -8,7 +8,6 @@ argParser = argparse.ArgumentParser()
 
 argParser.add_argument("blueprint", help = "the name of the blueprint you are trying to edit")
 argParser.add_argument("-c", "--connect", nargs = 2, metavar = ("SRC", "DST"), help = "connect logic gates of color SRC to logic gates of color DST (use hex for color)")
-
 args = argParser.parse_args()
 
 #Simple helper class to store paths
@@ -26,7 +25,6 @@ for BpDirItterator in os.listdir(paths.blueprints):
 		with open("%s\\%s\\description.json" %(paths.blueprints, BpDirItterator), "r") as descriptionFile:
 			name = json.load(descriptionFile)["name"]
 			if(name == args.blueprint):
-				print(BpDirItterator)
 				multipleFound = found
 				found = True
 				bpDir = BpDirItterator
