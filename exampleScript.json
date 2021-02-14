@@ -1,0 +1,23 @@
+{
+	"blueprint1":
+	[
+		[
+			"connect",
+			"eeeeee",
+			"222222"
+		],
+		[
+			"connect",
+			"gray-1",
+			"orange-1"
+		]
+	],
+	"blueprint2":
+	[
+		[
+			"connect",
+			"ffffff",
+			"eeeeee"
+		]
+	]
+}
