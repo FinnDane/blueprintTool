@@ -2,20 +2,28 @@ import os
 import json
 import re
 import argparse
+import textwrap
 
-from colors import colorLookup
+from lookups import *
 
 #Arguments
-argParser = argparse.ArgumentParser()
+argParser = argparse.ArgumentParser(
+	formatter_class=argparse.RawDescriptionHelpFormatter,
+	epilog = textwrap.dedent("""\
+		additional information:
+			for colors you can use the format (<baseColor>-<1-4>) or hex directly
+		""")
+)
 
-group = argParser.add_mutually_exclusive_group(required=True)
-group.add_argument("-b", "--blueprint", help = "the name of the blueprint you are trying to edit")
-group.add_argument("-i", "--input", help = "the path of the script you want to use")
-argParser.add_argument("-c", "--connect", nargs = 2, metavar = ("SRC", "DST"), help = "connect logic gates of color SRC to logic gates of color DST (use this format: <baseColor>-<1-4> or hex directly for color)")
+inputGroup = argParser.add_mutually_exclusive_group(required=True)
+inputGroup.add_argument("-b", "--blueprint", help = "the name of the blueprint you want to edit")
+inputGroup.add_argument("-i", "--input", help = "the path of the script you want to use")
+
+optionGroup = argParser.add_mutually_exclusive_group(required=True)
+optionGroup.add_argument("-c", "--connect", nargs = 2, metavar = ("SRC", "DST"), help = "connect logic gates of color <SRC> to logic gates of color <DST>")
+optionGroup.add_argument("-p", "--paint", nargs = 2, metavar = ("BLOCK", "COLOR"), help = "paint all block of type <BLOCK> the color <COLOR>")
 
 args = argParser.parse_args()
-
-
 
 #Simple helper class to store paths
 class paths:
@@ -30,21 +38,21 @@ def error(msg):
 
 def parseColor(input):
 	if(input.lower() in colorLookup):
-		return colorLookup[input.lower()]
-	return input
+		return colorLookup[input.lower()].lower()
+	return input.lower()
 
 def connect(src, dst, JSON):
 	destinations = []
 	#loop over all parts to detect if they are a destination
 	for body in JSON["bodies"]:
 		for child in body["childs"]:
-			if(child["color"] == parseColor(dst).lower()):	#if current part is destination color
+			if(child["color"] == parseColor(dst)):	#if current part is destination color
 				destinations.append({"id": child["controller"]["id"]})
 
 	#loop over all parts again to write the destinations to the sources
 	for body in JSON["bodies"]:
 		for child in body["childs"]:
-			if(child["color"] == parseColor(src).lower()):	#if current part is source color
+			if(child["color"] == parseColor(src)):	#if current part is source color
 				for destination in destinations:
 
 					if child["controller"]["controllers"] == None:	#check if the part already has connections and if not just write the whole array directly 
@@ -52,6 +60,14 @@ def connect(src, dst, JSON):
 					else:	#if it already has connections check if the connections alreay exist and if not append them to the array
 						if destination not in child["controller"]["controllers"]:
 							child["controller"]["controllers"].append(destination)
+
+#will add lookup for blocks later
+def paint(block, color, JSON):
+	#loop over all parts
+	for body in JSON["bodies"]:
+		for child in body["childs"]:
+			if(child["shapeId"] == block):
+				child["color"] = parseColor(color)
 
 def searchBlueprint(bpName):
 	found = False
@@ -74,7 +90,7 @@ def searchBlueprint(bpName):
 
 
 
-#Main
+#main
 if(args.input):	#if file/script input
 	try:
 		with open(f"{args.input}", "r") as scriptFile:
@@ -92,7 +108,10 @@ if(args.input):	#if file/script input
 							if(command[0] == "connect"):
 								if(len(command) != 3): error("the command 'connect' requires 2 arguments")
 								connect(command[1], command[2], blueprintJson)
-							else: error(f"command: \"{command[0]}\" is not recognised")
+							elif(command[0] == "paint"):
+								if(len(command) != 3): error("the command 'paint' requires 2 arguments")
+								paint(command[1], command[2], blueprintJson)
+							else: error(f"command: '{command[0]}' is not recognised")
 					
 						#overwrite file
 						blueprintFile.seek(0)
@@ -113,6 +132,8 @@ else:
 
 			if(args.connect):
 				connect(args.connect[0], args.connect[1], blueprintJson)
+			elif(args.paint):
+				paint(args.paint[0], args.paint[1], blueprintJson)
 
 			#overwrite file
 			blueprintFile.seek(0)

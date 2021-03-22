@@ -10,7 +10,7 @@ Disclaimer: this is absolute shitcode
 
 ## Basic usage
 ```
-blueprintTool.py [-h] (-b BLUEPRINT | -i INPUT) [-c SRC DST]
+blueprintTool.py [-h] (-b BLUEPRINT | -i INPUT) (-c SRC DST | -p BLOCK COLOR)
 ```
 You can use Hex for the colors or the format: "\<baseColor>-\<row>" where \<baseColor> is one of the following:
 
